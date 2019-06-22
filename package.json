@@ -14,6 +14,17 @@
     "react-scripts": "2.1.1",
     "react-stripe-checkout": "^2.6.3"
   },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "src/**/*.{js,jsx,ts,tsx,json,css,scss,md}": [
+      "prettier --single-quote --write",
+      "git add"
+      ]
+  },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
@@ -31,5 +42,5 @@
   ],
   "devDependencies": {
     "react-hot-loader": "^4.5.3"
-  }
+  }  
 }
