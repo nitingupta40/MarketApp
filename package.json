@@ -23,7 +23,7 @@
     "src/**/*.{js,jsx,ts,tsx,json,css,scss,md}": [
       "prettier --single-quote --write",
       "git add"
-      ]
+    ]
   },
   "scripts": {
     "start": "react-scripts start",
@@ -42,5 +42,5 @@
   ],
   "devDependencies": {
     "react-hot-loader": "^4.5.3"
-  }  
+  }
 }
