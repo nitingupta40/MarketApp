@@ -2,8 +2,8 @@ import React from "react";
 import { S3Image } from "aws-amplify-react";
 // prettier-ignore
 import { Notification, Popover, Button, Dialog, Card, Form, Input, Radio } from "element-react";
-import { updateProduct } from '../graphql/mutations';
-import { API, graphqlOperation } from 'aws-amplify';
+import { updateProduct, deleteProduct } from "../graphql/mutations";
+import { API, graphqlOperation } from "aws-amplify";
 import { convertCentsToDollars, convertDollarsToCents } from "../utils";
 import { userContext } from "../App";
 import PayButton from "./PayButton";
@@ -13,34 +13,62 @@ class Product extends React.Component {
     description: "",
     price: "",
     shipped: false,
-    updateProductDialog: false
+    updateProductDialog: false,
+    deleteProductDialog: false
   };
 
   handleUpdateProduct = async productId => {
     try {
-      this.setState({ updateProductDialog: false});
+      this.setState({ updateProductDialog: false });
       const { description, price, shipped } = this.state;
       const input = {
         id: productId,
         description,
         shipped,
-        price : convertDollarsToCents(price)
-      }
-      const result = await API.graphql(graphqlOperation(updateProduct, {input}));
-      console.log({result});
+        price: convertDollarsToCents(price)
+      };
+      const result = await API.graphql(
+        graphqlOperation(updateProduct, { input })
+      );
+      console.log({ result });
       Notification({
         title: "Success",
         message: "Product successfully updated!",
         type: "success"
       });
-    }
-    catch (err){
+    } catch (err) {
       console.error(`Failed to update product with id: ${productId}`, err);
     }
   };
 
+  handleDeleteProduct = async productId => {
+    try {
+      this.setState({ deleteProductDialog: false });
+      const input = {
+        id: productId
+      };
+      const result = await API.graphql(
+        graphqlOperation(deleteProduct, { input })
+      );
+      console.log({ result });
+      Notification({
+        title: "Success",
+        message: "Product successfully deleted!",
+        type: "success"
+      });
+    } catch (err) {
+      console.error(`Failed to delete product with id: ${productId}`, err);
+    }
+  };
+
   render() {
-    const { updateProductDialog, description, price, shipped } = this.state;
+    const {
+      updateProductDialog,
+      deleteProductDialog,
+      description,
+      price,
+      shipped
+    } = this.state;
     const { product } = this.props;
     return (
       <userContext.Consumer>
@@ -84,14 +112,55 @@ class Product extends React.Component {
                       icon="edit"
                       className="m-1"
                       onClick={() =>
-                        this.setState({ updateProductDialog: true,
+                        this.setState({
+                          updateProductDialog: true,
                           description: product.description,
                           price: convertCentsToDollars(product.price),
-                          shipped: product.shipped   
+                          shipped: product.shipped
                         })
                       }
                     />
-                    <Button type="danger" icon="delete" />
+                    <Popover
+                      placement="top"
+                      width="160"
+                      trigger="click"
+                      visible={deleteProductDialog}
+                      content={
+                        <>
+                          <p> Do you want to delete this?</p>
+                          <div className="text-right">
+                            <Button
+                              size="mini"
+                              type="text"
+                              className="m-1"
+                              onClick={() =>
+                                this.setState({ deleteProductDialog: false })
+                              }
+                            >
+                              Cancel
+                            </Button>
+                            <Button
+                              size="mini"
+                              type="primary"
+                              className="m-1"
+                              onClick={() =>
+                                this.handleDeleteProduct(product.id)
+                              }
+                            >
+                              Delete
+                            </Button>
+                          </div>
+                        </>
+                      }
+                    >
+                      <Button
+                        onClick={() =>
+                          this.setState({ deleteProductDialog: true })
+                        }
+                        type="danger"
+                        icon="delete"
+                      />
+                    </Popover>
                   </>
                 )}
               </div>
@@ -106,7 +175,7 @@ class Product extends React.Component {
                   <Form labelPosition="top">
                     <Form.Item label="Update Product Description">
                       <Input
-                        icon="information" 
+                        icon="information"
                         placeholder="Description"
                         value={description}
                         trim={true}
@@ -143,14 +212,18 @@ class Product extends React.Component {
                   </Form>
                 </Dialog.Body>
                 <Dialog.Footer>
-                  <Button 
+                  <Button
                     type="danger"
-                    onClick={() => this.setState({ updateProductDialog: false})}>
+                    onClick={() =>
+                      this.setState({ updateProductDialog: false })
+                    }
+                  >
                     Cancel
                   </Button>
                   <Button
                     type="primary"
-                    onClick={() => this.handleUpdateProduct(product.id)}>
+                    onClick={() => this.handleUpdateProduct(product.id)}
+                  >
                     Update
                   </Button>
                 </Dialog.Footer>
